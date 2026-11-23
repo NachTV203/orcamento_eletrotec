@@ -79,8 +79,12 @@ let modoAtual = 'orcamento';
         }
 
         function atualizarFolha() {
-            const campos =['os', 'data', 'validade', 'nome', 'telefone', 'email', 'cpf', 'insc', 'endereco', 'bairro', 'cidade', 'cep', 'prestacao', 'info_adc'];
+            const campos = ['os', 'data', 'validade', 'nome', 'telefone', 'email', 'cpf', 'insc', 'endereco', 'bairro', 'cidade', 'cep', 'prestacao', 'info_adc'];
             campos.forEach(campo => { document.getElementById('v_' + campo).innerText = document.getElementById('f_' + campo).value; });
+
+            // Atualiza o nome do cliente na assinatura
+            const nomeCliente = document.getElementById('f_nome').value.trim();
+            document.getElementById('v_ass_cliente').innerText = nomeCliente || 'Cliente';
 
             const descricoes = document.querySelectorAll('.item-desc');
             const quantidades = document.querySelectorAll('.item-qtd');
@@ -89,18 +93,33 @@ let modoAtual = 'orcamento';
             const v_tbody = document.getElementById('v_tbody_itens');
             v_tbody.innerHTML = '';
             let valorTotal = 0;
+            let itemNumero = 1;
 
-            for (let i = 0; i < 20; i++) {
-                let desc = '', qtd = '', valFormatado = '';
-                if (i < descricoes.length) {
-                    desc = descricoes[i].value; qtd = quantidades[i].value;
-                    let val = parseFloat(valores[i].value);
-                    if (!isNaN(val)) {
-                        valorTotal += val; valFormatado = val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                    }
+            for (let i = 0; i < descricoes.length; i++) {
+                let desc = descricoes[i].value.trim();
+                let qtd = quantidades[i].value.trim();
+                let val = parseFloat(valores[i].value);
+
+                // Ignora linhas totalmente vazias
+                if (desc === '' && qtd === '' && isNaN(val)) {
+                    continue;
                 }
-                v_tbody.innerHTML += `<tr><td>${i + 1}</td><td class="left-align">${desc}</td><td>${qtd}</td><td>${valFormatado}</td></tr>`;
+
+                let valFormatado = '';
+                if (!isNaN(val)) {
+                    valorTotal += val;
+                    valFormatado = val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                }
+
+                v_tbody.innerHTML += `<tr><td>${itemNumero}</td><td class="left-align">${desc}</td><td>${qtd}</td><td>${valFormatado}</td></tr>`;
+                itemNumero++;
             }
+
+            // Mantém 1 linha em branco se nenhum item tiver sido preenchido ainda
+            if (itemNumero === 1) {
+                v_tbody.innerHTML = `<tr><td>1</td><td class="left-align"></td><td></td><td></td></tr>`;
+            }
+
             document.getElementById('v_total').innerText = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
